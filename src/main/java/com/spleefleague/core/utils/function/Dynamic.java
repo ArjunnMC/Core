@@ -6,14 +6,20 @@
 package com.spleefleague.core.utils.function;
 
 import com.spleefleague.core.player.SLPlayer;
+import java.util.function.Function;
 
 /**
  *
  * @author Jonas
  * @param <V>
  */
-public interface Dynamic<V> {
+public interface Dynamic<V> extends Function<SLPlayer, V> {
 
+    @Override
+    default public V apply(SLPlayer slp) {
+        return get(slp);
+    }
+    
     public V get(SLPlayer slp);
 
     public static <V> Dynamic<V> getConstant(V constant) {

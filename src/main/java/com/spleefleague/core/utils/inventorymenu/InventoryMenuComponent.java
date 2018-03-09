@@ -56,5 +56,5 @@ public abstract class InventoryMenuComponent {
 
     }
 
-    abstract void selected(ClickType clickType);
+    protected abstract void selected(ClickType clickType);
 }

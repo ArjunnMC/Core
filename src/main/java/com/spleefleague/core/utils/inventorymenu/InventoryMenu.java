@@ -39,11 +39,13 @@ public class InventoryMenu extends InventoryMenuComponent implements InventoryHo
     private final boolean skipSingleSubmenu = false;
     private int currentPage = 0;
     
-    protected InventoryMenu(ItemStackWrapper displayItem, String title, Map<Integer, InventoryMenuComponentTemplate<? extends InventoryMenuComponent>> components, Map<Integer, InventoryMenuComponentTemplate<? extends InventoryMenuComponent>> staticComponents, boolean exitOnClickOutside, boolean menuControls, Dynamic<Boolean> accessController, Dynamic<Boolean> visibilityController, SLPlayer slp, boolean overwritePageBehavior) {
+    protected InventoryMenu(ItemStackWrapper displayItem, String title, Map<Integer, ? extends InventoryMenuComponentTemplate<? extends InventoryMenuComponent>> components, Map<Integer, ? extends InventoryMenuComponentTemplate<? extends InventoryMenuComponent>> staticComponents, boolean exitOnClickOutside, boolean menuControls, Dynamic<Boolean> accessController, Dynamic<Boolean> visibilityController, SLPlayer slp, boolean overwritePageBehavior) {
         super(displayItem, visibilityController, accessController, overwritePageBehavior);
         this.slp = slp;
-        this.allComponents = components;
-        this.staticComponents = staticComponents;
+        this.allComponents = new HashMap<>();
+        this.staticComponents = new HashMap<>();
+        this.allComponents.putAll(components);
+        this.staticComponents.putAll(staticComponents);
         this.inventories = new TreeMap<>();
         this.exitOnClickOutside = exitOnClickOutside;
         this.menuControls = menuControls;
@@ -56,7 +58,7 @@ public class InventoryMenu extends InventoryMenuComponent implements InventoryHo
     public SLPlayer getOwner() {
         return slp;
     }
-    
+
     private void setParents() {
         currentComponents
                 .values()
