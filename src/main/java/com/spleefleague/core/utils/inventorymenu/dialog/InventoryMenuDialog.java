@@ -32,6 +32,4 @@ public class InventoryMenuDialog<T> extends InventoryMenu {
         this.listener = listener;
         this.builder = builder;
     }
-    
-    
 }
