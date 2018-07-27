@@ -52,8 +52,10 @@ public class SLPlayer extends GeneralPlayer {
 
     public Rank getRank() {
         Rank rank = getActiveRank();
-        setPlayerListName(rank.getColor() + getName());
-        setDisplayName(rank.getColor() + getName());
+        if(getName() == null) {
+            setPlayerListName(rank.getColor() + getName());
+            setDisplayName(rank.getColor() + getName());
+        }
         return rank;
     }
     
@@ -214,7 +216,6 @@ public class SLPlayer extends GeneralPlayer {
     @DBLoad(fieldName = "options", priority = -1)
     private void setOptions(PlayerOptions options) {
         this.options = options;
-        options.apply(this);
     }
     
     protected void setReceivingChatChannels(HashSet<ChatChannel> chatChannels) {
@@ -280,6 +281,7 @@ public class SLPlayer extends GeneralPlayer {
                 if(this.options == null) {
                     this.setOptions(PlayerOptions.getDefault());
                 }
+                this.options.apply(this);
             } finally {
             }
             Rank rank = getRank();
