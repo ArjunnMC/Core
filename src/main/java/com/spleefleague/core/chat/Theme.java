@@ -14,7 +14,7 @@ import org.bukkit.ChatColor;
  */
 public enum Theme {
 
-    SUCCESS(ChatColor.GREEN),
+    SUCCESS(ChatColor.GRAY),
     SEVERE(ChatColor.DARK_RED),
     ERROR(ChatColor.RED),
     INFO(ChatColor.YELLOW),

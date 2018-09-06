@@ -155,7 +155,9 @@ public abstract class GeneralPlayer extends DBEntity implements DBLoadable, DBSa
 
     @Override
     public void setDisplayName(String name) {
-        getPlayer().setDisplayName(name);
+        if (getPlayer() != null) {
+            getPlayer().setDisplayName(name);
+        }
     }
 
     @Override
@@ -165,7 +167,9 @@ public abstract class GeneralPlayer extends DBEntity implements DBLoadable, DBSa
 
     @Override
     public void setPlayerListName(String name) {
-        getPlayer().setPlayerListName(name);
+        if (getPlayer() != null) {
+            getPlayer().setPlayerListName(name);
+        }
     }
 
     @Override

@@ -69,6 +69,13 @@ public class SpleefLeague extends CorePlugin implements PlayerHandling {
     private PortalManager portalManager;
     private DebuggerHostManager debuggerHostManager;
     private ServerType serverType;
+    public static final ChatColor modeColor = ChatColor.RED;
+    public static final ChatColor fillColor = ChatColor.GRAY;
+    public static final ChatColor arenaColor = ChatColor.RED;
+    public static final ChatColor pointColor = ChatColor.YELLOW;
+    public static final ChatColor timeColor = ChatColor.YELLOW;
+    public static final ChatColor levelColor = ChatColor.YELLOW;
+    public static final ChatColor playerColor = ChatColor.RED;
     
     public SpleefLeague() {
         super(ChatColor.GRAY + "[" + ChatColor.GOLD + "SpleefLeague" + ChatColor.GRAY + "]" + ChatColor.RESET);
@@ -279,23 +286,6 @@ public class SpleefLeague extends CorePlugin implements PlayerHandling {
         if(version.equals("unknown"))
             return "";
         return version.split("\\-")[1];
-    }
-    
-    public void performBan(SLPlayer target, UUID sender, String senderName, String message) {
-        Bukkit.getScheduler().runTaskAsynchronously(SpleefLeague.getInstance(), () -> {
-            Infraction ban = new Infraction(target.getUniqueId(), sender, InfractionType.BAN, System.currentTimeMillis(), -1, message);
-            SpleefLeague.getInstance().getPluginDB().getCollection("ActiveInfractions").deleteMany(new Document("uuid", target.getUniqueId().toString()));
-            EntityBuilder.save(ban, SpleefLeague.getInstance().getPluginDB().getCollection("Infractions"), false);
-            EntityBuilder.save(ban, SpleefLeague.getInstance().getPluginDB().getCollection("ActiveInfractions"), false);
-        });
-        ChatManager
-                .sendMessage(new ComponentBuilder(SpleefLeague.getInstance().getChatPrefix() + " ")
-                    .append(target.getName() + " has been banned by " + senderName + "!")
-                    .color(net.md_5.bungee.api.ChatColor.GRAY)
-                    .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Reason: " + message)
-                        .color(net.md_5.bungee.api.ChatColor.GRAY).create())
-                    ).create(), ChatChannel.STAFF_NOTIFICATIONS
-                );
     }
 
     private static SpleefLeague instance;

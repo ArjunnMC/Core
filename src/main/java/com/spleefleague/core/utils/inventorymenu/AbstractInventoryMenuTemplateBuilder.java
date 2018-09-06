@@ -1,8 +1,13 @@
 package com.spleefleague.core.utils.inventorymenu;
 
+import com.spleefleague.core.SpleefLeague;
 import com.spleefleague.core.player.SLPlayer;
+import static com.spleefleague.core.utils.inventorymenu.InventoryMenuAPI.item;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 
 public abstract class AbstractInventoryMenuTemplateBuilder<C extends AbstractInventoryMenu<X>, X extends InventoryMenuComponent, T extends AbstractInventoryMenuTemplate<C, X>, B extends AbstractInventoryMenuTemplateBuilder<C, X, T, B>> extends InventoryMenuComponentTemplateBuilder<C, T, B> {
 
@@ -49,9 +54,9 @@ public abstract class AbstractInventoryMenuTemplateBuilder<C extends AbstractInv
         WITHOUT SUPPLIER
     */
     
-        /*
-            BUILDER
-        */
+    /*
+        BUILDER
+    */
     public B component(int x, int y, AbstractInventoryMenuComponentTemplateBuilder<? extends X, ? extends AbstractInventoryMenuComponentTemplate<? extends X>, ?> builder) {
         return component(y * ROWSIZE + x, builder.build());
     }
@@ -65,12 +70,13 @@ public abstract class AbstractInventoryMenuTemplateBuilder<C extends AbstractInv
     }
     
     public B component(int position, AbstractInventoryMenuComponentTemplateBuilder<? extends X, ? extends AbstractInventoryMenuComponentTemplate<? extends X>, ?> builder) {
+        
         return component(position, builder.build());
     }
     
-        /*
-            TEMPLATES
-        */
+    /*
+        TEMPLATES
+    */
     public B component(int x, int y, AbstractInventoryMenuComponentTemplate<? extends X> template) {
         return component(y * ROWSIZE + x, template);
     }

@@ -2,12 +2,17 @@ package com.spleefleague.core.player;
 
 import com.spleefleague.core.SpleefLeague;
 import com.spleefleague.core.chat.ChatChannel;
+import com.spleefleague.core.chat.ChatManager;
 import com.spleefleague.core.chat.Theme;
+import com.spleefleague.core.infraction.Infraction;
+import com.spleefleague.core.infraction.InfractionType;
 import com.spleefleague.core.io.typeconverters.RankConverter;
 import com.spleefleague.core.utils.UtilChat;
 import com.spleefleague.entitybuilder.DBLoad;
 import com.spleefleague.entitybuilder.DBSave;
+import com.spleefleague.entitybuilder.EntityBuilder;
 import com.spleefleague.entitybuilder.TypeConverter.UUIDStringConverter;
+import com.spleefleague.gameapi.GamePlugin;
 import java.util.ArrayList;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -18,6 +23,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.UUID;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import org.bson.Document;
+import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.json.simple.JSONObject;
 
 /**
  *
@@ -42,6 +53,7 @@ public class SLPlayer extends GeneralPlayer {
     private int premiumCreditsGotThatMonth;
     private long premiumCreditsLastReceptionTime;
     private Checkpoint checkpoint;
+    private boolean requeue = true;
     
     public SLPlayer() {
         super();
@@ -67,6 +79,13 @@ public class SLPlayer extends GeneralPlayer {
     @DBLoad(fieldName = "rank", typeConverter = RankConverter.class, priority = 2)
     public void setRank(final Rank rank) {
         this.baseRank = rank;
+        try {
+            setPlayerListName(rank.getColor() + getName());
+            setDisplayName(rank.getColor() + getName());
+        }
+        catch (NullPointerException e) {
+            e.printStackTrace();
+        }
     }
     
     @DBLoad(fieldName = "temporaryRank")
@@ -176,6 +195,20 @@ public class SLPlayer extends GeneralPlayer {
     @DBSave(fieldName = "coins")
     public int getCoins() {
         return coins;
+    }
+    
+    public void addCoins(int coins) {
+        addCoins(coins, "");
+    }
+    
+    public void addCoins(int coins, String info) {
+        this.coins += coins;
+        ChatManager.sendMessagePlayer(SpleefLeague.getInstance().getPlayerManager().get(this.getPlayer()), SpleefLeague.getInstance().getChatPrefix()
+                + SpleefLeague.fillColor + " You gained "
+                + SpleefLeague.pointColor + coins
+                + SpleefLeague.fillColor + (coins == 1 ? " coin" : " coins")
+                + info
+                + SpleefLeague.fillColor + ".");
     }
     
     public void changeCoins(int delta) {
@@ -341,5 +374,75 @@ public class SLPlayer extends GeneralPlayer {
         this.chatChannels.clear();
         this.chatChannels.add(ChatChannel.GLOBAL);
         setSendingChannel(ChatChannel.GLOBAL);
+    }
+    
+    // Player control
+    public void performBan(UUID sender, String senderName, String message) {
+        Bukkit.getScheduler().runTaskAsynchronously(SpleefLeague.getInstance(), () -> {
+            Infraction ban = new Infraction(this.getUniqueId(), sender, InfractionType.BAN, System.currentTimeMillis(), -1, message);
+            SpleefLeague.getInstance().getPluginDB().getCollection("ActiveInfractions").deleteMany(new Document("uuid", this.getUniqueId().toString()));
+            EntityBuilder.save(ban, SpleefLeague.getInstance().getPluginDB().getCollection("Infractions"), false);
+            EntityBuilder.save(ban, SpleefLeague.getInstance().getPluginDB().getCollection("ActiveInfractions"), false);
+        });
+        ChatManager
+                .sendMessage(new ComponentBuilder(SpleefLeague.getInstance().getChatPrefix() + " ")
+                    .append(this.getName() + " has been banned by " + senderName + "!")
+                    .color(net.md_5.bungee.api.ChatColor.GRAY)
+                    .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Reason: " + message)
+                        .color(net.md_5.bungee.api.ChatColor.GRAY).create())
+                    ).create(), ChatChannel.STAFF_NOTIFICATIONS
+                );
+    }
+    
+    public void spectate(Player target) {
+        SLPlayer slp = SpleefLeague.getInstance().getPlayerManager().get(target);
+        if (!GamePlugin.isIngameGlobal(this)) {
+            for (GamePlugin gp : GamePlugin.getGamePlugins()) {
+                if (gp.isIngame(target)) {
+                    if (GamePlugin.isSpectatingGlobal(this)) {
+                        GamePlugin.unspectateGlobal(this);
+                    }
+                    if (gp.spectateGracefully(target, this)) {
+                        ChatManager.sendMessagePlayer(this, SpleefLeague.getInstance().getChatPrefix()
+                                + SpleefLeague.fillColor + " You are now spectating "
+                                + SpleefLeague.playerColor + target.getName()
+                                + SpleefLeague.fillColor + ". Type '/spectate' to leave.");
+                        return;
+                    }
+                }
+            }
+            ChatManager.sendMessagePlayer(this, SpleefLeague.getInstance().getChatPrefix() + " "
+                    + SpleefLeague.playerColor + target.getName() 
+                    + SpleefLeague.fillColor + " is not ingame.");
+        } else {
+            ChatManager.sendMessagePlayer(this, SpleefLeague.getInstance().getChatPrefix()
+                    + SpleefLeague.fillColor + " You are currently ingame!");
+        }
+    }
+    
+    public void unspectate() {
+        SLPlayer slp = SpleefLeague.getInstance().getPlayerManager().get(getPlayer());
+        if (GamePlugin.isSpectatingGlobal(getPlayer())) {
+            GamePlugin.unspectateGlobal(getPlayer());
+            ChatManager.sendMessagePlayer(slp, SpleefLeague.getInstance().getChatPrefix()
+                    + SpleefLeague.fillColor + " You are no longer spectating.");
+            if (slp.getGameMode() == GameMode.ADVENTURE || slp.getGameMode() == GameMode.SURVIVAL) {
+                slp.setAllowFlight(false);
+                slp.setFlying(false);
+            }
+        } else {
+            ChatManager.sendMessagePlayer(slp, SpleefLeague.getInstance().getChatPrefix()
+                    + SpleefLeague.fillColor + " You are not currently spectating anyone!");
+        }
+    }
+    
+    @DBSave(fieldName="requeue")
+    public boolean isRequeueing() {
+        return this.requeue;
+    }
+    
+    @DBLoad(fieldName="requeue")
+    public void setRequeueing(boolean requeue) {
+        this.requeue = requeue;
     }
 }

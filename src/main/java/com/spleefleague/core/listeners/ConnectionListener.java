@@ -78,14 +78,15 @@ public class ConnectionListener implements Listener {
     public void onPlayerJoin(GeneralPlayerLoadedEvent e) {
         if (e.getGeneralPlayer() instanceof SLPlayer) {
             SLPlayer slPlayer = (SLPlayer) e.getGeneralPlayer();
-
+            
             JSONObject send = new JSONObject();
             send.put("uuid", slPlayer.getUniqueId().toString());
             send.put("rank", slPlayer.getRank().getName());
             send.put("action", "UPDATE_INFO");
+            e.getGeneralPlayer().setCollidable(false);
             SpleefLeague.getInstance().getConnectionClient().send("sessions", send);
         }
-    }       
+    }
 
     public static void sendTicket(String playerName, String shownName, UUID playerUUID, String message, String server, ChatColor chatColor) {
         ChatManager.sendMessage(ChatChannel.STAFF,

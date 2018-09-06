@@ -30,6 +30,7 @@ import com.spleefleague.core.utils.inventorymenu.AbstractInventoryMenu;
 import com.spleefleague.core.utils.inventorymenu.InventoryMenuFlag;
 import org.bukkit.Material;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 
 public class InventoryMenuListener implements Listener {
 
@@ -117,19 +118,35 @@ public class InventoryMenuListener implements Listener {
             }
             event.setCancelled(true);
         }
+        if (event.getWhoClicked() instanceof Player) {
+            Player p = (Player) event.getWhoClicked();
+            if ((event.getCurrentItem() != null && isMenuItem(event.getCurrentItem(), getSLPlayer(p)))
+                    || (event.getCursor() != null && isMenuItem(event.getCursor(), getSLPlayer(p)))) {
+                event.setCancelled(true);
+            }
+        }
     }
 
     @EventHandler
-    public void onInventoryAction(InventoryClickEvent event) {
+    public void onInventoryDrag(InventoryClickEvent event) {
         if (event.getWhoClicked() instanceof Player) {
             Player p = (Player) event.getWhoClicked();
             if (event.getCurrentItem() != null && isMenuItem(event.getCurrentItem(), getSLPlayer(p))) {
                 event.setCancelled(true);
             }
         }
-
     }
 
+    @EventHandler
+    public void onInventoryDrag(InventoryDragEvent event) {
+        if (event.getWhoClicked() instanceof Player) {
+            Player p = (Player) event.getWhoClicked();
+            if (event.getCursor() != null && isMenuItem(event.getCursor(), getSLPlayer(p))) {
+                event.setCancelled(true);
+            }
+        }
+    }
+    
     private void exitMenuIfClickOutSide(AbstractInventoryMenu menu, Player player) {
         if (menu.isSet(InventoryMenuFlag.EXIT_ON_CLICK_OUTSIDE)) {
             menu.close(player);

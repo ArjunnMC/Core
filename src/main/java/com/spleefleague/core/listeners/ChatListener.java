@@ -51,10 +51,10 @@ public class ChatListener implements Listener {
     @EventHandler
     public void onChat(AsyncPlayerChatEvent event) {
         SLPlayer slp = SpleefLeague.getInstance().getPlayerManager().get(event.getPlayer().getUniqueId());
-        if (!lastMessage.containsKey(slp.getUniqueId()) || System.currentTimeMillis() - lastMessage.get(slp.getUniqueId()) > 2000) {
+        if (!lastMessage.containsKey(slp.getUniqueId()) || System.currentTimeMillis() - lastMessage.get(slp.getUniqueId()) > 500) {
             String message = event.getMessage();
-            if(antiCapsPattern.matcher(message).matches())
-                event.setMessage(message.toLowerCase());
+            //if(antiCapsPattern.matcher(message).matches())
+            //    event.setMessage(message.toLowerCase());
             String prefix = "";
             if (!slp.getRank().getDisplayName().equals("Default")) {
                 prefix = ChatColor.DARK_GRAY + "[" + ChatColor.GRAY + slp.getRank().getDisplayName() + ChatColor.DARK_GRAY + "] ";
@@ -63,9 +63,9 @@ public class ChatListener implements Listener {
                 ChatChannel channel = slp.getSendingChannel();
                 ChatManager.sendMessage(ChatColor.DARK_GRAY + "<" + prefix + slp.getRank().getColor() + slp.getName() + ChatColor.DARK_GRAY + ">" + ChatColor.RESET, event.getMessage(), channel);
             }
-        }
-        if (slp.getRank() != null && !(slp.getRank().hasPermission(Rank.MODERATOR) || Arrays.asList(Rank.MODERATOR).contains(slp.getRank()))) {
-            lastMessage.put(slp.getUniqueId(), System.currentTimeMillis());
+            if (slp.getRank() != null && !(slp.getRank().hasPermission(Rank.MODERATOR) || Arrays.asList(Rank.MODERATOR).contains(slp.getRank()))) {
+                lastMessage.put(slp.getUniqueId(), System.currentTimeMillis());
+            }
         }
         event.setCancelled(true);
     }
